@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<title>Hack Atone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="360">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+<script type="text/javascript">
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/chat');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                loadState()
+            });
+        });
+    }
+
+</script>
+
+<body class="w3-theme-l3" onload="connect(); loadState()">
+
+<div style="min-width:800px">
+
+    <div class="w3-top">
+        <div class="w3-bar w3-large  w3-green">
+            <span class="w3-bar-item">Nexign</span>
+        </div>
+    </div>
+    lo
+    <div class="w3-container" style="padding-left: 5%; padding-right: 5%;" id="base_container">
+
+    </div>
+
+
+    <div class="w3-bottom">
+        <div class="w3-bar w3-large  w3-green">
+            <span class="w3-bar-item">That's what happens if a back-end developer is involved in design :)</span>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    let defaultPic = "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";
+
+    function loadState() {
+        let xr = new XMLHttpRequest();
+        xr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                console.log('Xml Request success: ', xr.responseText);
+                replaceWithNewContent(xr.responseText)
+            }
+        };
+        xr.open('GET', "/api/v0/state", true);
+        xr.send()
+    }
+
+    // i am very sorry for this :(
+    function replaceWithNewContent(jsonContent) {
+        console.log("Input content: ", jsonContent);
+        let parsed = JSON.parse(jsonContent);
+        console.log('PARSED: ', parsed);
+
+        let newList = document.createElement("UL");
+        newList.classList.add('w3-ul', 'w3-card-4');
+        newList.style.marginTop = '50px';
+        newList.style.marginBottom = '34px';
+        newList.style.marginLeft = '10%';
+        newList.style.marginRight = '10%';
+
+        parsed.forEach(el => {
+            const id = el['id'];
+            let basePhoto = el['basePhoto'];
+            let cameraPhoto = el['cameraPhoto'];
+            const dateTime = el['dateTime'];
+            const similarity = el['similarity'];
+            console.log('Parsed: id = ', id);
+            console.log('Parsed: basePhoto = ', basePhoto);
+            console.log('Parsed: cameraPhoto = ', cameraPhoto);
+            console.log('Parsed: dateTime = ', dateTime);
+            console.log('Parsed: similarity = ', similarity);
+
+            let entryNode = document.createElement("LI");
+
+            let passed_class;
+            if (basePhoto == null || basePhoto === '') {
+                passed_class = "w3-red"
+            } else {
+                passed_class = "w3-blue-grey"
+            }
+
+            entryNode.classList.add("w3-bar", passed_class);
+            entryNode.style.paddingTop = '1%';
+            entryNode.style.paddingBottom = '1%';
+
+
+            if (basePhoto == null || basePhoto === '') basePhoto = defaultPic;
+            if (cameraPhoto == null || cameraPhoto === '') cameraPhoto = defaultPic;
+
+            let  base64startStringBase;
+            if (basePhoto.startsWith('/')) base64startStringBase = 'data:image/jpg;base64,';
+            if (basePhoto.startsWith('i')) base64startStringBase = 'data:image/png;base64,';
+            if (basePhoto.startsWith('R')) base64startStringBase = 'data:image/gif;base64,';
+            if (basePhoto.startsWith('U')) base64startStringBase = 'data:image/webp;base64,';
+
+            let base64startStringCamera;
+            if (cameraPhoto.startsWith('/')) base64startStringCamera = 'data:image/jpg;base64,';
+            if (cameraPhoto.startsWith('i')) base64startStringCamera = 'data:image/png;base64,';
+            if (cameraPhoto.startsWith('R')) base64startStringCamera = 'data:image/gif;base64,';
+            if (cameraPhoto.startsWith('U')) base64startStringCamera = 'data:image/webp;base64,';
+
+
+
+            let htmlStr = "<div class=\"w3-bar-item\" style=\"width:15%; height: 10vh\">\n" +
+                "                    <img src=\"" + base64startStringCamera + cameraPhoto + "\" class=\"w3-bar-item w3-circle\" style=\"height:170px; width:auto; max-width: 220px;margin-left: 10%\"\n" +
+                "                         alt=\"Person\">\n" +
+                "                    <div class=\"w3-container\">\n" +
+                "                        <p>From camera</p>\n" +
+                "                    </div>\n" +
+                "                </div>\n" +
+                "\n" +
+                "                <div class=\"w3-bar-item\" style=\"width:15%\">\n" +
+                "                    <img src=\"" + base64startStringBase + basePhoto + "\" class=\"w3-bar-item w3-circle\" style=\"height:170px; width:auto; max-width: 220px;\" alt=\"Person\">\n" +
+                "                    <div class=\"w3-container\">\n" +
+                "                        <p>From database</p>\n" +
+                "                    </div>\n" +
+                "                </div>" +
+                "\n" +
+                " <div class=\"w3-bar-item\" style=\"width:10%\">\n" +
+                "                    <div >\n" +
+                "                        <p>Similarity: " + similarity + "</p>\n" +
+                "                    </div>\n" +
+                "                </div>\n" +
+                "                <div class=\"w3-bar-item\" style=\"width:10%\">\n" +
+                "                    <div >\n" +
+                "                        <p>id: " + id + "</p>\n" +
+                "                    </div>\n" +
+                "                </div>\n" +
+                "                <div class=\"w3-bar-item\" style=\"width:10%\">\n" +
+                "                    <div >\n" +
+                "                        <p>Date/Time: " + dateTime + "</p>\n" +
+                "                    </div>\n" +
+                "                </div>"
+
+                console.log('HTML STRING: ', htmlStr)
+            ;
+
+            entryNode.innerHTML = htmlStr;
+
+
+            newList.appendChild(entryNode);
+        });
+        let base_cont = document.getElementById('base_container');
+        base_cont.innerHTML = '';
+        base_cont.appendChild(newList)
+    }
+
+
+</script>
+</body>
+</html>
