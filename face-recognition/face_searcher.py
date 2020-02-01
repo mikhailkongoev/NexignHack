@@ -31,6 +31,7 @@ class FaceSearcherService:
 
     def load_images(self, path_to_images):
         ids = os.listdir(path_to_images)
+        flag = 0
         for id in ids:
             sub_img_dir = os.path.join(path_to_images, id)
             if not os.path.isdir(sub_img_dir):
@@ -40,7 +41,11 @@ class FaceSearcherService:
                 face_names.append(os.path.join(path_to_images, id, face_name))
 
             for face_name in face_names:
-                self.add_new_image(face_name, face_name)
+                cur = self.add_new_image(face_name, face_name)
+                if not cur:
+                    flag += 1
+
+        print("count bad photos " + str(flag))
 
         print("Database created len =", len(self.vectors))
 
@@ -106,10 +111,10 @@ class FaceSearcherService:
         for id_people, faces in self.vectors.items():
             for face in faces:
                 similarity = self.face_similarity(face, face_vector)
-                if similarity > threshold:
-                    nearest.put((similarity, id_people))
-                    if nearest.qsize() > top:
-                        nearest.get()
+                # if similarity > threshold:
+                nearest.put((similarity, id_people))
+                if nearest.qsize() > top:
+                    nearest.get()
                 # if similarity > max_similarity:
                 #     max_similarity = similarity
                 #     max_id = id_people
