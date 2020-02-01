@@ -22,6 +22,9 @@ public class Aggregator {
     @Value("${events.percent}")
     private double eventsPercent;
 
+    @Value("${events.unauthorized.percent}")
+    private double eventsUnauthorizedPercent;
+
     @Value("${similarity.threshold}")
     private double similarityThreshold;
 
@@ -93,7 +96,8 @@ public class Aggregator {
                                 Collectors.counting())
                 ).entrySet()
                 .stream()
-                .filter(e -> e.getValue() >= eventsCount * eventsPercent)
+                .filter(e -> e.getValue() >= eventsCount * eventsPercent && !e.getKey().equals("-1") ||
+                        e.getValue() >= eventsCount * eventsUnauthorizedPercent && e.getKey().equals("-1"))
                 .filter(e -> !e.getKey().equals("0"))
                 .map(Map.Entry::getKey)
                 .findAny();
