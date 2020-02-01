@@ -1,0 +1,5 @@
+FROM vetos/neirofacerec:all-env
+ENV PYTHONUNBUFFERED=1
+COPY . /src/
+WORKDIR /src
+CMD ["python3.7", "video_service.cpython-37.pyc"]
