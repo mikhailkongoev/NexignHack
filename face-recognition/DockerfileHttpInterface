@@ -1,0 +1,7 @@
+FROM neirofacerec:all-env
+ENV PYTHONUNBUFFERED=1
+COPY . /src/
+RUN pip3.7 install -r serverrequirements.txt
+EXPOSE 8080
+#ENTRYPOINT ["python3.7", "main.py"]
+CMD ["python3.7", "main.py"]
