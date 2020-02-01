@@ -16,6 +16,7 @@ from online_tracking import PhantomSortTrackerOnline
 from visualize import draw_boxes_on_image_online, draw_boxes_on_image_det
 import base64
 
+import configparser as parser
 
 def make_request(url, data):
     """
@@ -48,10 +49,14 @@ def send_to_kafka(id_face, similarity, face_photo, video_frame):
     _, video_enc = cv2.imencode('.jpg', video_frame)
     jpg_as_text_face = base64.b64encode(face_enc)
     jpg_as_text_video = base64.b64encode(video_enc)
+    # cur_str = base64.b64decode(str(jpg_as_text_face)[2:-1])
+    # np_data = np.fromstring(cur_str, np.uint8)
+    # cur = cv2.imdecode(np_data,cv2.IMREAD_UNCHANGED)
+    # cv2.imwrite("wer.jpg", cur)
     producer.send('atomic', {
         'id': str(id_face),
-        'basePhoto': str(jpg_as_text_face),
-        'cameraPhoto': str(jpg_as_text_video),
+        'basePhoto': str(jpg_as_text_face)[2:-1],
+        'cameraPhoto': str(jpg_as_text_video)[2:-1],
         'dateTime': str(datetime.datetime.now()),
         'similarity': str(similarity)})
 
@@ -110,78 +115,104 @@ class VideoService:
 
 
     def run(self):
-        cap = cv2.VideoCapture(self.path_video)
-        number_frame = 0
+        while True:
+            try:
+                cap = cv2.VideoCapture(self.path_video)
+                number_frame = 0
 
-        new_video = None
-        if self.visualize:
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            fps = int(25)
+                # new_video = None
+                # if self.visualize:
+                #     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                #     fps = int(25)
+                #
+                #     path_result = "visualize_dir/"
+                #     new_video = cv2.VideoWriter(path_result + "out_hack.avi", fourcc=fourcc, fps=fps,
+                #                                 frameSize=(360, 640))
+                    # frameSize=(1920, 1080))
+                start = time.time()
+                with ThreadPoolExecutor(max_workers=5) as executor:
 
-            path_result = "visualize_dir/"
-            new_video = cv2.VideoWriter(path_result + "out_hack.avi", fourcc=fourcc, fps=fps,
-                                        frameSize=(360, 640))
-            # frameSize=(1920, 1080))
-        start = time.time()
-        with ThreadPoolExecutor(max_workers=5) as executor:
+                    while True:
+                        ret, frame = cap.read()
 
-            while True:
-                ret, frame = cap.read()
+                        if not ret:
+                            target_tracks = self.tracker.get_tracks()
 
-                if not ret:
-                    target_tracks = self.tracker.get_tracks()
+                        else:
 
-                else:
+                            if number_frame % self.nth_frame == 0:
+                                detections = self.face_vectorizer.find_faces(frame)
+                                # colored_boxes, target_tracks = self.tracker.update_all(detections, number_frame, frame)
 
-                    if number_frame % self.nth_frame == 0:
-                        detections = self.face_vectorizer.find_faces(frame)
-                        # colored_boxes, target_tracks = self.tracker.update_all(detections, number_frame, frame)
+                                main_detection = self.filter_main_face(detections, frame)
+                                detections = []
+                                if main_detection is not None:
+                                    detections.append(main_detection)
 
-                        main_detection = self.filter_main_face(detections, frame)
-                        detections = []
-                        if main_detection is not None:
-                            detections.append(main_detection)
+                                faces = self.face_vectorizer.get_img_from_det(frame, detections)
+                                for face in faces:
+                                    face_vector = self.face_vectorizer.get_vector_from_face(face)
+                                    # cv2.imwrite("/home/sergej/PycharmProjects/FaceHackathon/face_crop/test.png", face)
+                                    cur = self.face_searcher.searcher(face_vector, top=1, threshold=0.7)
 
-                        faces = self.face_vectorizer.get_img_from_det(frame, detections)
-                        for face in faces:
-                            face_vector = self.face_vectorizer.get_vector_from_face(face)
-                            # cv2.imwrite("/home/sergej/PycharmProjects/FaceHackathon/face_crop/test.png", face)
-                            cur = self.face_searcher.searcher(face_vector, top=1, threshold=0.7)
-                            if len(cur) > 0:
-                                similarity, id_img = cur[0]
-                                face = self.face_searcher.face_images[id_img]
-                                print(id_img + " " + str(similarity))
-                                name_f = id_img.split("/")[-1]
-                                send_to_kafka(id_img, similarity, face, frame)
-                                # cv2.imwrite("/home/sergej/PycharmProjects/FaceHackathon/result_faces/"+name_f, face)
-                            else:
-                                send_to_kafka(str(-1), 0, frame, frame)
+                                    # if len(cur) > 0:
+                                    #     similarity, id_img = cur[0]
+                                    #     face = self.face_searcher.face_images[id_img]
+                                    #     print(id_img + " " + str(similarity))
+                                    #     name_f = id_img.split("/")[-1]
+                                    #     int_id = name_f.split(".")[0]
+                                    #     send_to_kafka(int_id, similarity, face, frame)
+                                    #     # cv2.imwrite("/home/sergej/PycharmProjects/FaceHackathon/result_faces/"+name_f, face)
+                                    # else:
+                                    #     send_to_kafka(str(-1), 0, frame, frame)
+                                    similarity, id_img = cur[0]
+                                    if similarity >= 0.7:
+                                        face = self.face_searcher.face_images[id_img]
+                                        print(id_img + " " + str(similarity))
+                                        name_f = id_img.split("/")[-1]
+                                        int_id = name_f.split(".")[0]
+                                        send_to_kafka(int_id, similarity, face, frame)
+                                    else:
+                                        print("bad "+id_img + " " + str(similarity))
+                                        send_to_kafka(str(-1), similarity, frame, frame)
 
-                        if len(faces) == 0:
-                            send_to_kafka(str(0), 0, frame, frame)
-                        if self.visualize:
-                            vis_frame = draw_boxes_on_image_det(frame, detections)
 
-                if self.visualize:
-                    new_video.write(vis_frame)
+                                if len(faces) == 0:
+                                    send_to_kafka(str(0), 0, frame, frame)
+                                if self.visualize:
+                                    vis_frame = draw_boxes_on_image_det(frame, detections)
 
-                number_frame += 1
-                if number_frame % 100 == 0:
-                    print("Working on " + str(number_frame))
-                if not ret:
-                    break
-                # if number_frame > 1000:
-                #     break
+                        # if self.visualize:
+                        #     new_video.write(vis_frame)
 
-        # new_video.release()
-        cur = (time.time() - start)
-        print(cur)
-        print(number_frame / cur)
+                        number_frame += 1
+                        if number_frame % 100 == 0:
+                            print("Working on " + str(number_frame))
+                        if not ret:
+                            break
+                        # if number_frame > 1000:
+                        #     break
+
+                # new_video.release()
+                cur = (time.time() - start)
+                print(cur)
+                print(number_frame / cur)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
     # path = "/home/sergej/Downloads/hack2.mp4"
+    f = open("config.properties")
+    data = {}
+    for v in f.readlines():
+        k, val = v.split("=")
+        if k == 'path':
+            if val == '0\n':
+                val = 0
+        data[k] = val
+
     path = 0
-    video_service = VideoService(path, "tracker_config.json", "",
-                                 visualize=True, path_to_faces='/home/sergej/faces_all')
+    video_service = VideoService(data['path'], "tracker_config.json", "",
+                                 visualize=True, path_to_faces=data['path_to_faces'])
     video_service.run()
