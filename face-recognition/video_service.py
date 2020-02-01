@@ -12,24 +12,8 @@ import time
 import requests
 
 from face_searcher import FaceSearcherService
-from online_tracking import PhantomSortTrackerOnline
 from visualize import draw_boxes_on_image_online, draw_boxes_on_image_det
 import base64
-
-import configparser as parser
-
-def make_request(url, data):
-    """
-    Выполнить звапрос
-    :param url:
-    :param data:
-    :return:
-    """
-    requests.post(
-        url,
-        data=data
-    )
-
 
 import json
 import datetime
@@ -76,7 +60,6 @@ class VideoService:
     ):
         self.path_video = path_video
         self.face_vectorizer = FaceVectorizerService()
-        self.tracker = PhantomSortTrackerOnline.from_json(tracker_config)
         self.nth_frame = nth_frame
         self.market_code = market_code
         self.server_address = server_address
@@ -208,8 +191,8 @@ if __name__ == "__main__":
     for v in f.readlines():
         k, val = v.split("=")
         if k == 'path':
-            if val == '0\n':
-                val = 0
+            if val == '1\n':
+                val = 1
         data[k] = val
 
     path = 0

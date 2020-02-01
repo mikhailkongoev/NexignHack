@@ -8,7 +8,7 @@ from openvino_detectors.openvino_detectors import OpenvinoDetector
 class FaceDetector(OpenvinoDetector):
     def __init__(self, detection_threshold=0.5):
         super().__init__(cpu_lib="/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so",
-                         detector_xml="/home/sergej/PycharmProjects/facerecognition/openvino_detectors/face-detection/FP32/face-detection-adas-0001.xml",
+                         detector_xml="/home/mikhailkongoev/Desktop/hackaton/NexignHack/face-recognition/openvino_detectors/face-detection/FP32/face-detection-adas-0001.xml",
                          # detector_xml="openvino_detectors/models/person-vehicle-bike-detection-crossroad-0078/person-vehicle-bike-detection-crossroad-0078.xml",
                          detection_threshold=detection_threshold)
 
