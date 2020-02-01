@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -107,13 +109,19 @@ public class Aggregator {
     }
 
     private BusinessEvent generateNewEvent(boolean authorized) {
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        double similarity = queue.stream()
+                .mapToDouble(event -> Double.valueOf(event.getSimilarity()))
+                .average()
+                .orElse(0);
+
         if (authorized) {
             String candidate = candidateId.get();
             AtomicEvent event = queue.stream().filter(e -> e.getId().equals(candidate)).findAny().get();
-            return new BusinessEvent(candidate, event.getBasePhoto(), event.getCameraPhoto(), event.getDateTime(), event.getSimilarity());
+            return new BusinessEvent(candidate, event.getBasePhoto(), event.getCameraPhoto(), event.getDateTime(), formatter.format(similarity));
         } else {
             AtomicEvent event = queue.stream().filter(e -> e.getId().equals("-1")).findAny().get();
-            return new BusinessEvent("-1", "", event.getCameraPhoto(), event.getDateTime(), "");
+            return new BusinessEvent("-1", "", event.getCameraPhoto(), event.getDateTime(), formatter.format(similarity));
         }
     }
 
